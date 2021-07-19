@@ -1,6 +1,7 @@
 import tensorflow.keras
 from PIL import Image, ImageOps
 import numpy as np
+import cv2
 
 # Disable scientific notation for clarity
 np.set_printoptions(suppress=True)
@@ -15,10 +16,12 @@ with open('labels.txt', 'r') as f:
 # Create the array of the right shape to feed into the keras model
 # The 'length' or number of images you can put into the array is
 # determined by the first position in the shape tuple, in this case 1.
-data = np.ndarray(shape=(1, 224, 224, 3), dtype=np.float32)
+shape = (1, 224, 224, 3)
+data  = np.ndarray(shape, dtype=np.float32)
 
 # Replace this with the path to your image
-image = Image.open('various.jpg')
+image_name = 'single-banana.jpg'
+image = Image.open(image_name)
 
 #resize the image to a 224x224 with the same strategy as in TM2:
 #resizing the image to be at least 224x224 and then cropping from the center
@@ -29,7 +32,7 @@ image = ImageOps.fit(image, size, Image.ANTIALIAS)
 image_array = np.asarray(image)
 
 # display the resized image
-image.show()
+#image.show()
 
 # Normalize the image
 normalized_image_array = (image_array.astype(np.float32) / 127.0) - 1
@@ -42,8 +45,18 @@ prediction = model.predict(data)
 print(prediction)
 
 index = np.argmax(prediction)
+#print(index)
 class_name = class_name[index]
-#confidence_score = index
 
 print("Class Name : ", class_name)
-print("Confidence Score : ", index)
+
+image = cv2.imread(image_name)
+while True:
+    height, width, process = image.shape
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    cv2.putText(image, class_name, (20, 30), font, 1, (0, 255, 0), 1, cv2.LINE_AA)
+
+    cv2.imshow("Image", image)
+    k = cv2.waitKey(30) & 0xff
+    if k == ord("q"):
+        break
